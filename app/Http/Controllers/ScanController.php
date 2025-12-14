@@ -114,19 +114,16 @@ class ScanController extends Controller
             $relativePath = trim($match[1]);
             $content = ltrim($match[2], "\n");
 
-            $fullPath = $basePath . DIRECTORY_SEPARATOR . $relativePath;
-            $dir = dirname($fullPath);
+            $targetPath = $basePath . DIRECTORY_SEPARATOR . ltrim($relativePath, DIRECTORY_SEPARATOR);
 
-            // Security check
-            if (!Str::startsWith(realpath($dir) ?: '', $basePath)) {
+            // SECURITY CHECK
+            if (!Str::startsWith($targetPath, $basePath . DIRECTORY_SEPARATOR)) {
                 return back()->with('error', "Access denied: {$relativePath}");
             }
 
-            // Ensure directory exists
+            $dir = dirname($targetPath);
             File::ensureDirectoryExists($dir);
-
-            // Create file if not exists + write
-            File::put($fullPath, $content);
+            File::put($targetPath, $content);
 
             $written[] = $relativePath;
         }
