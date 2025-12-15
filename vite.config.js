@@ -7,13 +7,12 @@ export default defineConfig({
     plugins: [
         laravel({
             input: 'resources/js/app.jsx',
-            buildDirectory: 'build',  // default, but explicit
             refresh: true,
         }),
         react(),
     ],
     build: {
+        manifest: 'manifest.json',  // Forces manifest.json directly in public/build (not .vite subfolder)
         outDir: 'public/build',
-        manifest: true,
     },
 });
