@@ -7,8 +7,13 @@ export default defineConfig({
     plugins: [
         laravel({
             input: 'resources/js/app.jsx',
+            buildDirectory: 'build',  // default, but explicit
             refresh: true,
         }),
         react(),
     ],
+    build: {
+        outDir: 'public/build',
+        manifest: true,
+    },
 });
