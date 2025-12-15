@@ -1,17 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Chip, Box, Avatar } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
 import axios from './axios.js';
 
 const TaskCard = ({ task, onPickTask }) => {
     const [elapsed, setElapsed] = useState(0);
 
     useEffect(() => {
-        // Total logged time
         let total = task.time_logs?.reduce((sum, log) => sum + (log.duration_seconds || 0), 0) || 0;
 
-        // Live running timer if current user is working
         if (task.current_timer_start) {
             const start = new Date(task.current_timer_start);
             const interval = setInterval(() => {
@@ -73,7 +70,7 @@ const TaskCard = ({ task, onPickTask }) => {
 
                 {task.deadline_at && (
                     <Typography variant="caption" color={new Date(task.deadline_at) < new Date() ? 'error' : 'text.secondary'} sx={{ mt: 1, display: 'block' }}>
-                        Due {formatDistanceToNow(new Date(task.deadline_at), { addSuffix: true })}
+                        Due {new Date(task.deadline_at).toLocaleDateString()}
                     </Typography>
                 )}
 

@@ -1,13 +1,16 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Project Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Project Management Tool</title>
 
     @viteReactRefresh
-    @vite('resources/js/app.jsx')
+    @vite(['resources/js/app.jsx'])
 </head>
-<body>
-    <div id="app"></div>
+<body style="margin:0">
+    <div id="root"></div>
 </body>
 </html>
