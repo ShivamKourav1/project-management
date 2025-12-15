@@ -1,35 +1,49 @@
-
 <?php
 
 namespace App\Services;
 
 use App\Models\Task;
 use App\Models\Status;
-use App\Models\TaskHistory;
+use App\Models\User;
 
 class TaskAssignmentService
 {
-    public function assign(Task $task, int $toUserId, int $byUserId)
+    /**
+     * Assign task to new user – automation:
+     * - Set status to queue status of new assignee's type (e.g. To be Developed)
+     * - Stop timer of previous assignee
+     * - Clear picked/started timestamps
+     *
+     * @param Task $task
+     * @param int $newAssigneeId
+     * @param int $changedById
+     * @return void
+     */
+    public function assign(Task $task, int $newAssigneeId, int $changedById): void
     {
-        $task->assigned_to = $toUserId;
-        $task->save();
+        $newAssignee = User::findOrFail($newAssigneeId);
+        $changedBy   = User::findOrFail($changedById);
 
-        // Determine "To be X" status
-        $status = Status::where('user_type_id', optional($task->assignee)->user_type_id)
-            ->where('category', 'queue')
-            ->first();
+        $queueStatus = Status::where('user_type_id', $newAssignee->user_type_id)
+                            ->where('category', 'queue')
+                            ->firstOrFail();
 
-        if ($status) {
-            app(StatusTransitionService::class)
-                ->transition($task, $status, $byUserId);
+        // Stop timer of previous assignee if any
+        if ($task->assigned_to) {
+            app(TimeLogService::class)->stopRunningTimer($task->assigned_to);
         }
 
-        TaskHistory::create([
-            'task_id' => $task->id,
-            'action' => 'Assigned',
-            'old_value' => null,
-            'new_value' => 'Assigned to user ID ' . $toUserId,
-            'performed_by' => $byUserId,
-        ]);
+        app(StatusTransitionService::class)->transition(
+            $task,
+            $queueStatus,
+            $changedById,
+            'Assigned',
+            "Assigned to {$newAssignee->name} by {$changedBy->name}"
+        );
+
+        $task->assigned_to = $newAssignee->id;
+        $task->picked_at   = null;
+        $task->started_at  = null;
+        $task->save();
     }
 }

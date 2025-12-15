@@ -1,29 +1,37 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { AppBar, Toolbar, Typography, Box, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
-export default function Filters({ onChange }) {
-  const [local, setLocal] = useState({});
+const Filters = () => {
+    return (
+        <AppBar position="static" color="default" elevation={1}>
+            <Toolbar>
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                    Project Management Tool
+                </Typography>
 
-  const update = (key, value) => {
-    const updated = { ...local, [key]: value };
-    setLocal(updated);
-    onChange(updated);
-  };
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <TextField label="Search tasks" variant="outlined" size="small" />
+                    
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Priority</InputLabel>
+                        <Select label="Priority">
+                            <MenuItem value="">All</MenuItem>
+                            <MenuItem value="critical">Critical</MenuItem>
+                            <MenuItem value="high">High</MenuItem>
+                        </Select>
+                    </FormControl>
 
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <select onChange={e => update('severity_id', e.target.value)}>
-        <option value="">Severity</option>
-        <option value="1">Blocker</option>
-        <option value="2">Critical</option>
-        <option value="3">Major</option>
-      </select>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Assignee</InputLabel>
+                        <Select label="Assignee">
+                            <MenuItem value="">All</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+            </Toolbar>
+        </AppBar>
+    );
+};
 
-      <select onChange={e => update('deadline', e.target.value)}>
-        <option value="">Deadline</option>
-        <option value="overdue">Overdue</option>
-        <option value="today">Today</option>
-      </select>
-    </div>
-  );
-}
+export default Filters;

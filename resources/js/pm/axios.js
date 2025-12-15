@@ -1,9 +1,17 @@
-// resources/js/pm/axios.js
+
 import axios from 'axios';
 
-const instance = axios.create({
-    baseURL: 'http://127.0.0.1:8000',
-    withCredentials: true, // Important for Sanctum cookie
+axios.defaults.baseURL = '/api';
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.withCredentials = true;
+
+// Add CSRF token if needed (Laravel Sanctum/Spa)
+axios.interceptors.request.use(config => {
+    const token = document.querySelector('meta[name="csrf-token"]');
+    if (token) {
+        config.headers['X-CSRF-TOKEN'] = token.content;
+    }
+    return config;
 });
 
-export default instance;
+export default axios;
