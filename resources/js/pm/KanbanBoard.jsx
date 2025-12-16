@@ -1,13 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Paper } from '@mui/material';
+import { Box, Typography, CircularProgress, Paper, Fab } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import TaskCard from './TaskCard.jsx';
+import NewTaskInput from './NewTaskInput.jsx';
 import axios from './axios.js';
 
 const KanbanBoard = () => {
     const [columns, setColumns] = useState({});
     const [orderedStatuses, setOrderedStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [globalNewOpen, setGlobalNewOpen] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -25,14 +28,8 @@ const KanbanBoard = () => {
                 grouped[status.id] = {
                     id: status.id,
                     name: status.name,
-                    tasks: []
+                    tasks: tasksRes.data.filter(task => task.status_id === status.id)
                 };
-            });
-
-            tasksRes.data.forEach(task => {
-                if (grouped[task.status_id]) {
-                    grouped[task.status_id].tasks.push(task);
-                }
             });
 
             setColumns(grouped);
@@ -49,6 +46,11 @@ const KanbanBoard = () => {
         return () => clearInterval(interval);
     }, []);
 
+    const handleTaskCreated = () => {
+        fetchData();
+        setGlobalNewOpen(false);
+    };
+
     const handlePickTask = () => {
         fetchData();
     };
@@ -62,31 +64,52 @@ const KanbanBoard = () => {
     }
 
     return (
-        <Box sx={{ display: 'flex', overflowX: 'auto', p: 3, gap: 3, height: '100%' }}>
-            {orderedStatuses.map(status => {
-                const column = columns[status.id] || { tasks: [] };
-                return (
-                    <Paper
-                        key={status.id}
-                        sx={{
-                            minWidth: 350,
-                            bgcolor: '#fafafa',
-                            borderRadius: 2,
-                            p: 2,
-                            boxShadow: 2
-                        }}
-                    >
-                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                            {column.name} ({column.tasks.length})
-                        </Typography>
+        <>
+            <Box sx={{ display: 'flex', overflowX: 'auto', p: 3, gap: 3, height: '100%' }}>
+                {orderedStatuses.map(status => {
+                    const column = columns[status.id] || { tasks: [] };
 
-                        {column.tasks.map((task) => (
-                            <TaskCard key={task.id} task={task} onPickTask={handlePickTask} />
-                        ))}
-                    </Paper>
-                );
-            })}
-        </Box>
+                    return (
+                        <Paper
+                            key={status.id}
+                            sx={{
+                                minWidth: 350,
+                                bgcolor: '#fafafa',
+                                borderRadius: 2,
+                                p: 2,
+                                boxShadow: 2
+                            }}
+                        >
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                {column.name} ({column.tasks.length})
+                            </Typography>
+
+                            {column.tasks.map(task => (
+                                <TaskCard key={task.id} task={task} onPickTask={handlePickTask} />
+                            ))}
+                        </Paper>
+                    );
+                })}
+            </Box>
+
+            {/* Global + button for new task */}
+            <Fab
+                color="primary"
+                aria-label="add"
+                onClick={() => setGlobalNewOpen(true)}
+                sx={{
+                    position: 'fixed',
+                    bottom: 32,
+                    right: 32,
+                }}
+            >
+                <AddIcon />
+            </Fab>
+
+            {globalNewOpen && (
+                <NewTaskInput onTaskCreated={handleTaskCreated} />
+            )}
+        </>
     );
 };
 

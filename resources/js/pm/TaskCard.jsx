@@ -1,10 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Chip, Box, Avatar } from '@mui/material';
+import { Card, CardContent, Typography, Chip, Box, Avatar, TextField } from '@mui/material';
 import axios from './axios.js';
 
 const TaskCard = ({ task, onPickTask }) => {
     const [elapsed, setElapsed] = useState(0);
+    const [editingTitle, setEditingTitle] = useState(false);
+    const [title, setTitle] = useState(task.title);
+    const [editingDesc, setEditingDesc] = useState(false);
+    const [description, setDescription] = useState(task.description || '');
 
     useEffect(() => {
         let total = task.time_logs?.reduce((sum, log) => sum + (log.duration_seconds || 0), 0) || 0;
@@ -37,6 +41,38 @@ const TaskCard = ({ task, onPickTask }) => {
         }
     };
 
+    const saveTitle = async () => {
+        if (title === task.title) {
+            setEditingTitle(false);
+            return;
+        }
+
+        try {
+            await axios.patch(`/tasks/${task.id}`, { title });
+            onPickTask(); // refresh
+        } catch (err) {
+            console.error('Update failed', err);
+            setTitle(task.title);
+        }
+        setEditingTitle(false);
+    };
+
+    const saveDescription = async () => {
+        if (description === (task.description || '')) {
+            setEditingDesc(false);
+            return;
+        }
+
+        try {
+            await axios.patch(`/tasks/${task.id}`, { description });
+            onPickTask();
+        } catch (err) {
+            console.error('Update failed', err);
+            setDescription(task.description || '');
+        }
+        setEditingDesc(false);
+    };
+
     return (
         <Card
             onClick={handleClick}
@@ -50,15 +86,41 @@ const TaskCard = ({ task, onPickTask }) => {
             }}
         >
             <CardContent sx={{ pb: 2 }}>
-                <Typography variant="subtitle1" fontWeight="bold">
-                    {task.title}
-                </Typography>
+                {editingTitle ? (
+                    <TextField
+                        fullWidth
+                        autoFocus
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        onBlur={saveTitle}
+                        onKeyDown={(e) => e.key === 'Enter' && saveTitle()}
+                        variant="standard"
+                    />
+                ) : (
+                    <Typography variant="subtitle1" fontWeight="bold" onClick={(e) => { e.stopPropagation(); setEditingTitle(true); }}>
+                        {task.title}
+                    </Typography>
+                )}
 
-                {task.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-                        {task.description.length > 100
-                            ? `${task.description.substring(0, 100)}...`
-                            : task.description}
+                {editingDesc ? (
+                    <TextField
+                        fullWidth
+                        multiline
+                        autoFocus
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        onBlur={saveDescription}
+                        variant="standard"
+                        sx={{ mt: 1 }}
+                    />
+                ) : (
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 1, mb: 2, minHeight: '20px' }}
+                        onClick={(e) => { e.stopPropagation(); setEditingDesc(true); }}
+                    >
+                        {task.description || 'Click to add description...'}
                     </Typography>
                 )}
 
