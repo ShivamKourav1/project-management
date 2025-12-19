@@ -10,7 +10,7 @@ const KanbanBoard = () => {
     const [columns, setColumns] = useState({});
     const [orderedStatuses, setOrderedStatuses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [globalNewOpen, setGlobalNewOpen] = useState(false);
+    const [showNewTask, setShowNewTask] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -48,7 +48,7 @@ const KanbanBoard = () => {
 
     const handleTaskCreated = () => {
         fetchData();
-        setGlobalNewOpen(false);
+        setShowNewTask(false);
     };
 
     const handlePickTask = () => {
@@ -92,11 +92,11 @@ const KanbanBoard = () => {
                 })}
             </Box>
 
-            {/* Global + button for new task */}
+            {/* Global floating + button */}
             <Fab
                 color="primary"
-                aria-label="add"
-                onClick={() => setGlobalNewOpen(true)}
+                aria-label="add new task"
+                onClick={() => setShowNewTask(true)}
                 sx={{
                     position: 'fixed',
                     bottom: 32,
@@ -106,8 +106,23 @@ const KanbanBoard = () => {
                 <AddIcon />
             </Fab>
 
-            {globalNewOpen && (
-                <NewTaskInput onTaskCreated={handleTaskCreated} />
+            {/* Global new task form */}
+            {showNewTask && (
+                <Box
+                    sx={{
+                        position: 'fixed',
+                        bottom: 100,
+                        right: 32,
+                        width: 360,
+                        bgcolor: 'background.paper',
+                        boxShadow: 6,
+                        borderRadius: 2,
+                        p: 2,
+                        zIndex: 1300,
+                    }}
+                >
+                    <NewTaskInput onTaskCreated={handleTaskCreated} />
+                </Box>
             )}
         </>
     );
