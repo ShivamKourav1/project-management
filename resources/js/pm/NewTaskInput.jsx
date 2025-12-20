@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { TextField, Box, Button, Autocomplete, Typography } from '@mui/material';
 import axios from './axios.js';
 
@@ -7,22 +6,28 @@ const NewTaskInput = ({ onTaskCreated }) => {
     const [title, setTitle] = useState('');
     const [assigneeId, setAssigneeId] = useState(null);
     const [deadline, setDeadline] = useState('');
+    const [sprintId, setSprintId] = useState(null);
     const [users, setUsers] = useState([]);
-    const [loadingUsers, setLoadingUsers] = useState(false);
+    const [sprints, setSprints] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            setLoadingUsers(true);
+        const fetchData = async () => {
+            setLoading(true);
             try {
-                const res = await axios.get('/users');
-                setUsers(res.data);
+                const [usersRes, sprintsRes] = await Promise.all([
+                    axios.get('/users'),
+                    axios.get('/sprints')
+                ]);
+                setUsers(usersRes.data);
+                setSprints(sprintsRes.data);
             } catch (err) {
-                console.error('Failed to load users', err);
+                console.error('Failed to load data', err);
             }
-            setLoadingUsers(false);
+            setLoading(false);
         };
 
-        fetchUsers();
+        fetchData();
     }, []);
 
     const handleSubmit = async () => {
@@ -34,11 +39,13 @@ const NewTaskInput = ({ onTaskCreated }) => {
                 task_type_id: 1, // Default "Task"
                 assigned_to: assigneeId,
                 deadline_at: deadline || null,
+                sprint_id: sprintId,
             });
 
             setTitle('');
             setAssigneeId(null);
             setDeadline('');
+            setSprintId(null);
             onTaskCreated();
         } catch (err) {
             console.error('Task creation failed', err);
@@ -64,12 +71,26 @@ const NewTaskInput = ({ onTaskCreated }) => {
             <Autocomplete
                 options={users}
                 getOptionLabel={(option) => option.name || ''}
-                loading={loadingUsers}
+                loading={loading}
                 onChange={(e, value) => setAssigneeId(value ? value.id : null)}
                 renderInput={(params) => (
                     <TextField
                         {...params}
                         label="Assign to (optional)"
+                        sx={{ mb: 2 }}
+                    />
+                )}
+            />
+
+            <Autocomplete
+                options={sprints}
+                getOptionLabel={(option) => option.name || ''}
+                loading={loading}
+                onChange={(e, value) => setSprintId(value ? value.id : null)}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label="Sprint (optional)"
                         sx={{ mb: 2 }}
                     />
                 )}
@@ -90,7 +111,7 @@ const NewTaskInput = ({ onTaskCreated }) => {
                 variant="contained"
                 color="primary"
                 onClick={handleSubmit}
-                disabled={!title.trim()}
+                disabled={!title.trim() || loading}
             >
                 Create Task
             </Button>
@@ -98,4 +119,4 @@ const NewTaskInput = ({ onTaskCreated }) => {
     );
 };
 
-export default NewTaskInput;
+export default NewTaskInput; 

@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -7,6 +6,7 @@ use App\Http\Controllers\Api\TaskActionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\StatusController;
+use App\Http\Controllers\Api\SprintController;
 
 // Auth
 Route::post('/login', [AuthController::class, 'login']);
@@ -20,4 +20,5 @@ Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/users', [UserController::class, 'index']);
 
     Route::get('/statuses', [StatusController::class, 'index']);
-// });
+    Route::apiResource('sprints', SprintController::class);
+// }); 

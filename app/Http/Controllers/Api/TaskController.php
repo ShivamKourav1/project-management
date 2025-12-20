@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Models\Status;
 use App\Services\PriorityResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,13 +20,37 @@ class TaskController extends Controller
 
     public function index()
     {
-        return Task::with(['status', 'priority', 'taskType', 'assignee', 'tags', 'time_logs', 'severity'])
+        return Task::with(['status', 'priority', 'taskType', 'assignee', 'tags', 'timeLogs', 'severity', 'sprint'])
             ->get();
     }
 
     public function store(Request $request)
     {
-        // ... (existing code unchanged)
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'task_type_id' => 'required|exists:task_types,id',
+            'severity_id' => 'nullable|exists:severities,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'deadline_at' => 'nullable|date',
+            'sprint_id' => 'nullable|exists:sprints,id',
+        ]);
+
+        $validated['created_by'] = Auth::id();
+        $validated['status_id'] = Status::where('name', 'New')->first()->id ?? 1; // Assume default 'New' status
+
+        $task = Task::create($validated);
+
+        $this->priorityResolver->resolve($task);
+
+        \App\Models\TaskHistory::create([
+            'task_id'    => $task->id,
+            'event'      => 'Created',
+            'details'    => 'Created by ' . Auth::user()->name,
+            'changed_by' => Auth::id(),
+        ]);
+
+        return $task->load(['status', 'priority', 'taskType', 'assignee', 'tags', 'timeLogs', 'severity', 'sprint']);
     }
 
     public function update(Request $request, Task $task)
@@ -33,6 +58,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title'       => 'sometimes|string|max:255',
             'description' => 'sometimes|nullable|string',
+            'sprint_id'   => 'sometimes|nullable|exists:sprints,id',
         ]);
 
         $task->update($validated);
@@ -47,6 +73,6 @@ class TaskController extends Controller
             'changed_by' => Auth::id(),
         ]);
 
-        return $task->load(['status', 'priority', 'taskType', 'assignee', 'tags', 'time_logs', 'severity']);
+        return $task->load(['status', 'priority', 'taskType', 'assignee', 'tags', 'timeLogs', 'severity', 'sprint']);
     }
-}
+} 

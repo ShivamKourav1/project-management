@@ -1,37 +1,63 @@
+ import React, { useState, useEffect } from 'react';
+import { AppBar, Toolbar, Typography, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import axios from './axios.js';
 
-import React from 'react';
-import { AppBar, Toolbar, Typography, Box, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+const Filters = ({ filters, setFilters }) => {
+  const [priorities, setPriorities] = useState(['All', 'Critical', 'High', 'Medium', 'Low']); // Fetch if dynamic
+  const [assignees, setAssignees] = useState([]);
+  const [sprints, setSprints] = useState([]);
 
-const Filters = () => {
-    return (
-        <AppBar position="static" color="default" elevation={1}>
-            <Toolbar>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    Project Management Tool
-                </Typography>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersRes, sprintsRes] = await Promise.all([
+          axios.get('/users'),
+          axios.get('/sprints')
+        ]);
+        setAssignees([{ id: 'All', name: 'All' }, ...usersRes.data]);
+        setSprints([{ id: 'All', name: 'All' }, ...sprintsRes.data]);
+      } catch (err) {
+        console.error('Failed to load filters data', err);
+      }
+    };
+    fetchData();
+  }, []);
 
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <TextField label="Search tasks" variant="outlined" size="small" />
-                    
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <InputLabel>Priority</InputLabel>
-                        <Select label="Priority">
-                            <MenuItem value="">All</MenuItem>
-                            <MenuItem value="critical">Critical</MenuItem>
-                            <MenuItem value="high">High</MenuItem>
-                        </Select>
-                    </FormControl>
+  const handleChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <InputLabel>Assignee</InputLabel>
-                        <Select label="Assignee">
-                            <MenuItem value="">All</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
-            </Toolbar>
-        </AppBar>
-    );
+  return (
+    <>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Project Management Tool
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ p: 2, display: 'flex', gap: 2 }}>
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel>Priority</InputLabel>
+          <Select value={filters.priority} onChange={(e) => handleChange('priority', e.target.value)}>
+            {priorities.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel>Assignee</InputLabel>
+          <Select value={filters.assignee} onChange={(e) => handleChange('assignee', e.target.value)}>
+            {assignees.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel>Sprint</InputLabel>
+          <Select value={filters.sprint} onChange={(e) => handleChange('sprint', e.target.value)}>
+            {sprints.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
+          </Select>
+        </FormControl>
+      </Box>
+    </>
+  );
 };
 
-export default Filters;
+export default Filters; 

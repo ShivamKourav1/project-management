@@ -1,5 +1,4 @@
-
-import React from 'react';
+ import React, { useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -19,17 +18,19 @@ const theme = createTheme({
 });
 
 const App = () => {
+    const [filters, setFilters] = useState({ priority: 'All', assignee: 'All', sprint: 'All' });
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-                <Filters />
+                <Filters filters={filters} setFilters={setFilters} />
                 <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-                    <KanbanBoard />
+                    <KanbanBoard filters={filters} />
                 </Box>
             </Box>
         </ThemeProvider>
     );
 };
 
-export default App;
+export default App; 
