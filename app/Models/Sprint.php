@@ -8,13 +8,19 @@ class Sprint extends Model
 {
     protected $guarded = [];
 
-    public function tasks()
+    public function project()
     {
-        return $this->hasMany(Task::class);
+        return $this->belongsTo(Project::class);
     }
 
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-} 
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+}
+

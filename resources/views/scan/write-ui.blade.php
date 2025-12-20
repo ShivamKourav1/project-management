@@ -34,7 +34,10 @@ Paste your <strong>WA (Write Anywhere)</strong> formatted content below:
 <form method="POST" action="{{ url('/scan/write') }}">
     @csrf
 
-    <textarea name="data">{{ old('data') }}</textarea>
+    <textarea name="data">@@@FullFileNameHere@s@
+{{ old('data') }}
+@@e@
+    </textarea>
 
     <br>
 

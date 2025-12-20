@@ -1,4 +1,5 @@
- import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, CircularProgress, Paper, Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TaskCard from './TaskCard.jsx';
@@ -23,14 +24,19 @@ const KanbanBoard = ({ filters }) => {
             setOrderedStatuses(statuses);
 
             let filteredTasks = tasksRes.data;
+
+            // Safe filtering with null checks
             if (filters.priority !== 'All') {
-                filteredTasks = filteredTasks.filter(t => t.priority?.name === filters.priority);
+                filteredTasks = filteredTasks.filter(t => (t.priority?.name || 'None') === filters.priority);
             }
             if (filters.assignee !== 'All') {
-                filteredTasks = filteredTasks.filter(t => t.assigned_to === filters.assignee);
+                filteredTasks = filteredTasks.filter(t => t.assigned_to === parseInt(filters.assignee));
             }
             if (filters.sprint !== 'All') {
-                filteredTasks = filteredTasks.filter(t => t.sprint_id === filters.sprint);
+                filteredTasks = filteredTasks.filter(t => t.sprint_id === parseInt(filters.sprint));
+            }
+            if (filters.project !== 'All') {
+               filteredTasks = filteredTasks.filter(t => t.sprint?.project_id === parseInt(filters.project));
             }
 
             const grouped = {};
@@ -75,7 +81,6 @@ const KanbanBoard = ({ filters }) => {
 
     return (
         <>
-            {/* Global floating + button */}
             <Fab
                 color="primary"
                 aria-label="add"
@@ -85,7 +90,6 @@ const KanbanBoard = ({ filters }) => {
                 <AddIcon />
             </Fab>
 
-            {/* Global new task form */}
             {showNewTask && (
                 <Box
                     position="fixed"
@@ -111,7 +115,6 @@ const KanbanBoard = ({ filters }) => {
                 </Box>
             )}
 
-            {/* Kanban board columns */}
             <Box display="flex" overflow="auto" p={2}>
                 {orderedStatuses.map(status => (
                     <Box key={status.id} mr={2} flexShrink={0} width="300px">
@@ -130,4 +133,4 @@ const KanbanBoard = ({ filters }) => {
     );
 };
 
-export default KanbanBoard; 
+export default KanbanBoard;
