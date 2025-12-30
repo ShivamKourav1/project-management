@@ -12,16 +12,18 @@ use App\Http\Controllers\Api\ProjectController;  // Add this
 // Auth routes...
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/me', [AuthController::class, 'me']);
 
-// API resources
-Route::apiResource('projects', ProjectController::class);
-Route::apiResource('sprints', SprintController::class);
-Route::apiResource('tasks', TaskController::class)->only(['index', 'store', 'update']);
+Route::middleware('auth:sanctum')->group(function () {
+    // API resources
+    Route::apiResource('projects', ProjectController::class);
+    Route::apiResource('sprints', SprintController::class);
+    Route::apiResource('tasks', TaskController::class)->only(['index', 'store', 'update']);
 
-Route::post('tasks/{task}/pick', [TaskActionController::class, 'pick']);
-Route::post('tasks/{task}/assign', [TaskActionController::class, 'assign']);
-Route::post('tasks/{task}/status', [TaskActionController::class, 'changeStatus']);
+    Route::post('tasks/{task}/pick', [TaskActionController::class, 'pick']);
+    Route::post('tasks/{task}/assign', [TaskActionController::class, 'assign']);
+    Route::post('tasks/{task}/status', [TaskActionController::class, 'changeStatus']);
 
-Route::get('/users', [UserController::class, 'index']);
-Route::get('/statuses', [StatusController::class, 'index']);
-
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/statuses', [StatusController::class, 'index']);
+});

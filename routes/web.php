@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\AuthController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/pm/login', function () {
+    return view('pm.login');
+})->name('pm.login');
 
 // Serve Project Management Tool at /pm (keeps your main landing page safe at root)
 Route::get('/pm/{any?}', function () {
