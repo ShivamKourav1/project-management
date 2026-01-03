@@ -2,17 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ScanController;
-use App\Http\Controllers\Api\AuthController;
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
 Route::get('/pm/login', function () {
     return view('pm.login');
 })->name('pm.login');
 
-// Serve Project Management Tool at /pm (keeps your main landing page safe at root)
+// Serve Project Management Tool at /pm
 Route::get('/pm/{any?}', function () {
-    return view('app');
+    return view('app'); // or 'pm.app' depending on your view name
 })->where('any', '.*');
 
 // Keep /scan/ tool accessible

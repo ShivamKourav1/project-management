@@ -50,7 +50,7 @@
                 await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
 
                 // Step 2: Now login
-                await axios.post('/login', { email, password }, { withCredentials: true });
+                await axios.post('/api/login', { email, password }, { withCredentials: true });
 
                 // Success → redirect to main app
                 window.location.href = '/pm';
